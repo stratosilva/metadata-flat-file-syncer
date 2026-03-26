@@ -1465,7 +1465,7 @@ def export_metadata(metadata_type_selection: str):
             # and the second apostrophe is added by Google Sheets to indicate that the cell contains text.
             # Unfortunately, replacing '' with ' those not work either. So we need to add a placeholder APOSTROPHE
             # which then gets replaced later on in Adding Formatting stage
-            df = df.applymap(lambda x: "APOSTROPHE" + x if isinstance(x, str) and x.startswith("+") else x)
+            df = df.map(lambda x: "APOSTROPHE" + x if isinstance(x, str) and x.startswith("+") else x)
             # Add some empty rows at the end
             current_number_rows = df.shape[0]
             columns = df.columns
