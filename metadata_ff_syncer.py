@@ -949,10 +949,11 @@ def import_metadata(metadata_type_selection: str):
             for column in df.columns:
                 if '[' in column and ']' in column:
                     # Add a tmp column
-                    df.insert(column_index, 'tmp', [''] * df.shape[0])
+                    df.insert(column_index, 'tmp', '')
+                    df['tmp'] = df['tmp'].astype(object)
                     indexes = df[df['id'] != ''].index.tolist()
                     # Append the last index
-                    indexes.append(df.shape[0])
+                    indexes.append(df.index.max() + 1)
                     # indexes.append(df[df[column] != ''].index.tolist()[-1:][0]+1)
                     for i in range(0, len(indexes) - 1):
                         # Slice column
@@ -988,7 +989,7 @@ def import_metadata(metadata_type_selection: str):
                             # Otherwise expand into a list
                             # This call will fail if the column is not of type object
                             # Skip if all elements in list are empty
-                            if not all(element == '' for element in column_list):
+                            if column_list:
                                 df.at[indexes[i], 'tmp'] = column_list
 
                 if 'tmp' in df.columns:
@@ -998,12 +999,13 @@ def import_metadata(metadata_type_selection: str):
 
                 column_index += 1
 
-            # Rename column
+            # Drops rows where the 'id' (or any specific column) is an empty string
+            df = df[df['id'] != '']
             df.columns = df.columns.str.replace("[", "")
             df.columns = df.columns.str.replace("]", "")
             # Remove rows not given by index
             # df = df.drop(df.index[df[df['id'] == ''].index.tolist()])
-            df['id'].replace('', np.nan, inplace=True)
+            df['id'] = df['id'].replace('', np.nan)
             df.dropna(subset=['id'], inplace=True)
             # Remove multilevel columns, they will be processed later
             columns_to_drop = list()
